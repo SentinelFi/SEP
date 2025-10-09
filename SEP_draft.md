@@ -123,13 +123,14 @@ pub trait TokenizedVault: TokenInterface {
     /// * `e` - Access to the Soroban environment.
     /// * `assets` - The amount of underlying assets to deposit.
     /// * `receiver` - The address that will receive the minted vault shares.
+    /// * `from` - The address that will provide the underlying assets.
     /// * `operator` - The address performing the deposit operation.
     ///
     /// # Events
     ///
-    /// * topics - `["deposit", operator: Address, receiver: Address]`
+    /// * topics - `["deposit", operator: Address, from: Address, receiver: Address]`
     /// * data - `[assets: i128, shares: i128]`
-    fn deposit(e: &Env, assets: i128, receiver: Address, operator: Address) -> i128;
+    fn deposit(e: &Env, assets: i128, receiver: Address, from: Address, operator: Address) -> i128;
 
     /// Returns the maximum amount of vault shares that can be minted
     /// for the given receiver address.
@@ -158,13 +159,14 @@ pub trait TokenizedVault: TokenInterface {
     /// * `e` - Access to the Soroban environment.
     /// * `shares` - The amount of vault shares to mint.
     /// * `receiver` - The address that will receive the minted vault shares.
+    /// * `from` - The address that will provide the underlying assets.
     /// * `operator` - The address performing the mint operation.
     ///
     /// # Events
     ///
-    /// * topics - `["deposit", operator: Address, receiver: Address]`
+    /// * topics - `["deposit", operator: Address, from: Address, receiver: Address]`
     /// * data - `[assets: i128, shares: i128]`
-    fn mint(e: &Env, shares: i128, receiver: Address, operator: Address) -> i128;
+    fn mint(e: &Env, shares: i128, receiver: Address, from: Address, operator: Address) -> i128;
 
     /// Returns the maximum amount of underlying assets that can be
     /// withdrawn by the given owner, limited by their vault share balance.
@@ -256,6 +258,7 @@ The deposit event is emitted when underlying assets are deposited into the vault
 
 #### Topics:
 `Address`: The address that initiated the deposit transaction.
+`Address`: The address that will provide the underlying assets.
 `Address`: The address that will own the vault shares being minted.
 
 #### Data:
@@ -355,5 +358,7 @@ Implementation specifics:
 Underlying asset interactions are handled through the `TokenClient` struct, which provides functionality to query balances and decimals, as well as execute asset transfers.
 
 Certain arithmetic operations, particularly `muldiv` calculations, are implemented based on an open-source mathematical library developed by Script3. For reference: https://github.com/script3/soroban-fixed-point-math/
+
+Maximum decimals offset value: the OpenZeppelin implementation caps this value at 10 to balance security and user experience. Values above 10 offer negligible practical benefits, while values approaching 30 can cause overflow errors, depending on the base asset decimals, and amount of assets in the vault.
 
 OpenZeppelin’s fungible token standard implementation (SEP-41), for reference: https://github.com/OpenZeppelin/stellar-contracts/blob/main/packages/tokens/src/fungible/mod.rs 
